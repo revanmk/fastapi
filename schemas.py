@@ -22,16 +22,8 @@ class UserOut(BaseModel):
 
     class Config:
         orm_mode = True
-
-from pydantic import BaseModel
-from typing import Optional
-
-# Existing models like UserBase, PostBase...
-
 class Token(BaseModel):
     access_token: str
     token_type: str
 class TokenData(BaseModel):
-    username: Optional[str] = None
-    user_id: Optional[int] = None
-    exp: Optional[int] = None
+    id: Optional[str] = None
