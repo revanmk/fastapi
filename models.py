@@ -1,5 +1,5 @@
 from database import Base
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 
 class Post(Base):
     __tablename__ = "posts"
@@ -7,6 +7,7 @@ class Post(Base):
     title= Column(String, index=True)
     content =  Column(String, index=True)
     published = Column(Boolean, default=True)
+    user_id = Column(Integer,ForeignKey("users.id"), nullable=False)
 
 class User(Base):
     __tablename__ = "users"

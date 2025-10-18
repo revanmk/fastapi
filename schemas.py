@@ -6,6 +6,14 @@ class PostBase(BaseModel):
     content: str
     published: bool = True
 
+class PostCreate(PostBase):
+    pass
+class PostOut(PostBase):
+    id: int
+    user_id: int
+
+    class Config:
+        orm_mode = True
 class UserBase(BaseModel):
     username: str
     email: EmailStr
