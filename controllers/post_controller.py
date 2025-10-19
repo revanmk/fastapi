@@ -2,8 +2,9 @@ from typing import List
 from fastapi import Depends, APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Post
-from schemas import PostBase, PostCreate, PostOut
+from models import Post, Vote
+from sqlalchemy import func
+from schemas import PostBase, PostCreate, PostOut, PostWithVotes
 import oauth2
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
@@ -24,16 +25,32 @@ async def create_post(
 
 
 # Get All Posts
-@router.get("/", response_model=List[PostOut])
+@router.get("/", response_model=List[PostWithVotes])
 async def get_posts(db: Session = Depends(get_db)):
-    posts = db.query(Post).all()
+    posts = (
+        db.query(
+            Post,
+            func.count(Vote.post_id).label("votes")  # ✅ count votes per post
+        )
+        .join(Vote, Vote.post_id == Post.id, isouter=True)  # LEFT JOIN so posts with 0 votes are also included
+        .group_by(Post.id)
+        .all()
+    )
     return posts
 
 
 # Get Single Post
-@router.get("/{id}", response_model=PostOut)
+@router.get("/{id}", response_model=PostWithVotes)
 async def get_post(id: int, db: Session = Depends(get_db)):
-    post = db.query(Post).filter(Post.id == id).first()
+    post = (
+            db.query(
+                Post,
+                func.count(Vote.post_id).label("votes")  # ✅ count votes per post
+            )
+            .join(Vote, Vote.post_id == Post.id, isouter=True)  # LEFT JOIN so posts with 0 votes are also included
+            .group_by(Post.id)
+            .first()
+        )    
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post with id {id} not found")
